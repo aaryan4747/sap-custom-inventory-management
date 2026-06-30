@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_ENHO" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <TOOL>BADI</TOOL>
+   <SHORTTEXT>Automatic replenishment checking via BAdI</SHORTTEXT>
+   <ORIGINAL_OBJECT>
+    <PGMID>R3TR</PGMID>
+    <OBJECT>ENHS</OBJECT>
+    <OBJ_NAME>BADI_MATERIAL_DOCUMENT</OBJ_NAME>
+    <ORG_OBJ_TYPE>ENHS</ORG_OBJ_TYPE>
+    <ORG_OBJ_NAME>BADI_MATERIAL_DOCUMENT</ORG_OBJ_NAME>
+    <ORG_MAIN_TYPE>ENHS</ORG_MAIN_TYPE>
+    <ORG_MAIN_NAME>BADI_MATERIAL_DOCUMENT</ORG_MAIN_NAME>
+    <PROGRAMNAME>SAPLMB_DOCUMENT_BADI</PROGRAMNAME>
+   </ORIGINAL_OBJECT>
+   <BADI_DATA>
+    <ENH_BADI_IMPL_DATA>
+     <IMPL_NAME>ZINV_REPL_BADI</IMPL_NAME>
+     <BADI_NAME>MB_DOCUMENT_BADI</BADI_NAME>
+     <IMPL_CLASS>ZCL_IM_INV_REPL_BADI</IMPL_CLASS>
+     <ACTIVE>X</ACTIVE>
+     <FILTER_VALUES/>
+    </ENH_BADI_IMPL_DATA>
+   </BADI_DATA>
+  </asx:values>
+ </asx:abap>
+</abapGit>

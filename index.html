@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SAP Custom Inventory Management & Replenishment Simulator</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Style -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-mode">
+
+    <!-- App Shell Container -->
+    <div class="app-container">
+        
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="sap-logo">
+                    <span class="sap-text">SAP</span>
+                    <span class="custom-badge">Z-DEV</span>
+                </div>
+                <h3>Inventory System</h3>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab="dashboard" id="nav-dashboard">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Fiori Dashboard</span>
+                </button>
+                <button class="nav-item" data-tab="alv-report" id="nav-alv-report">
+                    <i class="fa-solid fa-table-cells"></i>
+                    <span>ALV Grid Report</span>
+                </button>
+                <button class="nav-item" data-tab="migo-transaction" id="nav-migo">
+                    <i class="fa-solid fa-dolly"></i>
+                    <span>MIGO Movement</span>
+                </button>
+                <button class="nav-item" data-tab="ddic-explorer" id="nav-ddic">
+                    <i class="fa-solid fa-database"></i>
+                    <span>DDIC Explorer</span>
+                </button>
+                <button class="nav-item" data-tab="code-viewer" id="nav-code">
+                    <i class="fa-solid fa-code"></i>
+                    <span>ABAP Source Code</span>
+                </button>
+                <button class="nav-item" data-tab="abapgit-panel" id="nav-git">
+                    <i class="fa-brands fa-git-alt"></i>
+                    <span>abapGit Control</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="theme-toggle" id="theme-switch" role="button" aria-label="Toggle Theme">
+                    <i class="fa-solid fa-moon"></i>
+                    <span>Dark Mode</span>
+                    <label class="switch">
+                        <input type="checkbox" id="theme-checkbox" checked>
+                        <span class="slider round"></span>
+                    </label>
+                </div>
+                <div class="user-profile">
+                    <i class="fa-solid fa-user-gear"></i>
+                    <div>
+                        <p class="user-name">DEVELOPER_ABAP</p>
+                        <p class="user-role">SAP Architect</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            
+            <!-- Top App Bar -->
+            <header class="top-bar">
+                <div class="header-left">
+                    <h1 id="current-tab-title">Overview Dashboard</h1>
+                    <p class="header-subtitle" id="current-tab-subtitle">Real-time metrics, active alerts, and automation status</p>
+                </div>
+                <div class="header-right">
+                    <div class="system-status">
+                        <span class="status-indicator online"></span>
+                        <span>SAP Client: 800 (DEV)</span>
+                    </div>
+                    <div class="git-status-badge">
+                        <i class="fa-solid fa-code-fork"></i>
+                        <span>branch: <strong>main</strong></span>
+                        <span class="git-synced-indicator synced" id="git-status-icon">Synced</span>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Tab Container Viewports -->
+            <div class="tab-viewports">
+
+                <!-- 1. DASHBOARD VIEWPORT -->
+                <section class="tab-viewport active" id="viewport-dashboard">
+                    <!-- Key Performance Cards (Fiori Style) -->
+                    <div class="fiori-row">
+                        <div class="fiori-card flex-1">
+                            <div class="card-icon blue"><i class="fa-solid fa-cubes"></i></div>
+                            <div class="card-details">
+                                <h4 class="card-value" id="dash-total-sku">5</h4>
+                                <p class="card-label">Tracked SKUs</p>
+                            </div>
+                        </div>
+                        <div class="fiori-card flex-1 cursor-pointer" id="dash-card-alerts">
+                            <div class="card-icon red"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                            <div class="card-details">
+                                <h4 class="card-value red-text" id="dash-active-alerts">0</h4>
+                                <p class="card-label">Low Stock Alerts</p>
+                            </div>
+                        </div>
+                        <div class="fiori-card flex-1">
+                            <div class="card-icon orange"><i class="fa-solid fa-rotate"></i></div>
+                            <div class="card-details">
+                                <h4 class="card-value" id="dash-pending-replenish">0</h4>
+                                <p class="card-label">Pending Replenishments</p>
+                            </div>
+                        </div>
+                        <div class="fiori-card flex-1">
+                            <div class="card-icon green"><i class="fa-solid fa-receipt"></i></div>
+                            <div class="card-details">
+                                <h4 class="card-value" id="dash-movements-count">0</h4>
+                                <p class="card-label">Logged Movements</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Simulator Guide & Quick Action Rows -->
+                    <div class="dashboard-grid">
+                        <!-- Main Guide / Quick Start -->
+                        <div class="dashboard-panel flex-2">
+                            <h3><i class="fa-solid fa-circle-play text-accent"></i> Interactive Simulation Walkthrough</h3>
+                            <p class="panel-intro">
+                                This dashboard simulates an end-to-end integration of SAP custom warehouse tracking components. 
+                                Follow these steps to witness the automation in action:
+                            </p>
+                            <div class="walkthrough-steps">
+                                <div class="step-card">
+                                    <div class="step-num">1</div>
+                                    <div class="step-content">
+                                        <h5>Inspect Initial Stock</h5>
+                                        <p>Go to the <strong>ALV Grid Report</strong> tab. Observe the current stock levels, safety thresholds, and color indicators.</p>
+                                    </div>
+                                </div>
+                                <div class="step-card">
+                                    <div class="step-num">2</div>
+                                    <div class="step-content">
+                                        <h5>Post Goods Movement</h5>
+                                        <p>Navigate to <strong>MIGO Movement</strong>. Post a <strong>Goods Issue (201)</strong> to reduce stock below the safety threshold.</p>
+                                    </div>
+                                </div>
+                                <div class="step-card">
+                                    <div class="step-num">3</div>
+                                    <div class="step-content">
+                                        <h5>Observe BAdI Automation</h5>
+                                        <p>Watch the <strong>BAdI logs</strong> run in real-time. The BAdI intercepts the movement, checks thresholds, and triggers the replenishment workflow.</p>
+                                    </div>
+                                </div>
+                                <div class="step-card">
+                                    <div class="step-num">4</div>
+                                    <div class="step-content">
+                                        <h5>Verify ALV Grid & PR</h5>
+                                        <p>Return to the <strong>ALV Grid</strong> to view updated levels, red warnings, and the auto-generated Purchase Requisition (PR) document.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- System Configuration Summary -->
+                        <div class="dashboard-panel flex-1">
+                            <h3><i class="fa-solid fa-sliders"></i> Active Configuration</h3>
+                            <ul class="system-specs">
+                                <li>
+                                    <span class="spec-label">BAdI Active:</span>
+                                    <span class="spec-value text-green"><i class="fa-solid fa-circle-check"></i> Yes (MB_DOCUMENT_BADI)</span>
+                                </li>
+                                <li>
+                                    <span class="spec-label">OO Class:</span>
+                                    <span class="spec-value text-accent">ZCL_INVENTORY_BALANCE</span>
+                                </li>
+                                <li>
+                                    <span class="spec-label">ALV Engine:</span>
+                                    <span class="spec-value">CL_SALV_TABLE (Grid)</span>
+                                </li>
+                                <li>
+                                    <span class="spec-label">Version Control:</span>
+                                    <span class="spec-value text-orange"><i class="fa-brands fa-git-alt"></i> abapGit (Local Repo)</span>
+                                </li>
+                            </ul>
+                            <div class="quick-links">
+                                <button class="btn btn-primary btn-block btn-tab-jump" data-tab="migo-transaction">
+                                    <i class="fa-solid fa-plus-circle"></i> Create Goods Issue (MIGO)
+                                </button>
+                                <button class="btn btn-secondary btn-block btn-tab-jump" data-tab="code-viewer">
+                                    <i class="fa-solid fa-code"></i> Browse ABAP Classes
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 2. ALV REPORT VIEWPORT -->
+                <section class="tab-viewport" id="viewport-alv-report">
+                    <div class="sap-alv-container">
+                        <!-- Selection Screen Collapsible -->
+                        <div class="sap-selection-screen" id="alv-selection-screen">
+                            <div class="selection-header" id="toggle-selection-btn">
+                                <h4><i class="fa-solid fa-filter"></i> SAP Selection Screen (Program: ZINV_ALV_REPORT)</h4>
+                                <span class="collapse-icon"><i class="fa-solid fa-chevron-up"></i></span>
+                            </div>
+                            <div class="selection-body" id="selection-form-body">
+                                <div class="selection-row">
+                                    <div class="form-group flex-1">
+                                        <label for="sel-matnr">Material (MATNR)</label>
+                                        <select id="sel-matnr" class="form-control">
+                                            <option value="ALL">* (All Materials)</option>
+                                            <!-- Dynamically populated -->
+                                        </select>
+                                    </div>
+                                    <div class="form-group flex-1">
+                                        <label for="sel-werks">Plant (WERKS)</label>
+                                        <input type="text" id="sel-werks" class="form-control uppercase" value="1000" placeholder="1000">
+                                    </div>
+                                    <div class="form-group flex-1">
+                                        <label for="sel-lgort">Storage Location (LGORT)</label>
+                                        <input type="text" id="sel-lgort" class="form-control uppercase" value="0001" placeholder="0001">
+                                    </div>
+                                </div>
+                                <div class="selection-row mt-2">
+                                    <div class="form-check">
+                                        <input type="checkbox" id="sel-alerts-only" class="form-check-input">
+                                        <label for="sel-alerts-only" class="form-check-label">Only display Critical Low-Stock Alerts</label>
+                                    </div>
+                                    <div class="form-buttons">
+                                        <button class="btn btn-sap-execute" id="btn-run-report">
+                                            <i class="fa-solid fa-circle-play"></i> Execute (F8)
+                                        </button>
+                                        <button class="btn btn-sap-reset" id="btn-reset-report">
+                                            <i class="fa-solid fa-arrow-rotate-left"></i> Reset
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ALV Grid Toolbar -->
+                        <div class="alv-grid-toolbar">
+                            <div class="toolbar-left">
+                                <span class="alv-title">Grid: ZMINVENT_MASTER Status</span>
+                                <div class="divider"></div>
+                                <div class="search-box">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                    <input type="text" id="alv-search" placeholder="Search grid...">
+                                </div>
+                            </div>
+                            <div class="toolbar-right">
+                                <button class="btn-sap-icon" title="Sort Ascending" id="alv-sort-asc"><i class="fa-solid fa-sort-up"></i></button>
+                                <button class="btn-sap-icon" title="Sort Descending" id="alv-sort-desc"><i class="fa-solid fa-sort-down"></i></button>
+                                <button class="btn-sap-icon" title="Set Filter" id="alv-filter"><i class="fa-solid fa-filter"></i></button>
+                                <div class="divider"></div>
+                                <button class="btn btn-sap-action" id="alv-manual-reorder">
+                                    <i class="fa-solid fa-truck-ramp-box"></i> Trigger Replenishment
+                                </button>
+                                <button class="btn btn-sap-action outline" id="alv-reset-stock">
+                                    <i class="fa-solid fa-trash-can-arrow-up"></i> Reset Stock Baseline
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- ALV Grid Table -->
+                        <div class="alv-table-wrapper">
+                            <table class="sap-alv-table" id="alv-table">
+                                <thead>
+                                    <tr>
+                                        <th class="col-icon">Alert</th>
+                                        <th>Material</th>
+                                        <th>Description</th>
+                                        <th>Plant</th>
+                                        <th>S.Loc</th>
+                                        <th class="text-right">Current Stock</th>
+                                        <th>UoM</th>
+                                        <th class="text-right">Safety Threshold</th>
+                                        <th class="text-right">Reorder Qty</th>
+                                        <th>Active PR</th>
+                                        <th>Status message</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="alv-tbody">
+                                    <!-- Dynamic rows loaded here -->
+                                </tbody>
+                            </table>
+                            <p class="alv-tip"><i class="fa-solid fa-info-circle"></i> Double-click any material row to drill down into its Goods Movement History (simulating secondary ALV popup).</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. MIGO TRANSACTION VIEWPORT -->
+                <section class="tab-viewport" id="viewport-migo-transaction">
+                    <div class="migo-split-layout">
+                        <!-- MIGO Posting Panel -->
+                        <div class="dashboard-panel migo-form-panel">
+                            <h3><i class="fa-solid fa-file-invoice"></i> Post Goods Movement (Transaction: MIGO)</h3>
+                            <p class="panel-subtitle">Post movements (Receipts/Issues) to see the BAdI interceptor trigger replenishments</p>
+                            
+                            <form id="migo-form" class="mt-4">
+                                <div class="form-group">
+                                    <label for="migo-matnr">Material *</label>
+                                    <select id="migo-matnr" class="form-control" required>
+                                        <!-- Dynamically populated -->
+                                    </select>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group flex-1">
+                                        <label for="migo-werks">Plant</label>
+                                        <input type="text" id="migo-werks" class="form-control uppercase" value="1000" readonly>
+                                    </div>
+                                    <div class="form-group flex-1">
+                                        <label for="migo-lgort">Storage Location</label>
+                                        <input type="text" id="migo-lgort" class="form-control uppercase" value="0001" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group flex-2">
+                                        <label for="migo-bwart">Movement Type (BWART) *</label>
+                                        <select id="migo-bwart" class="form-control" required>
+                                            <option value="201" data-shkzg="H" selected>201 - Goods Issue for Cost Center (-)</option>
+                                            <option value="101" data-shkzg="S">101 - Goods Receipt for Purchase Order (+)</option>
+                                            <option value="261" data-shkzg="H">261 - Goods Issue for Order (-)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group flex-1">
+                                        <label for="migo-menge">Quantity *</label>
+                                        <input type="number" id="migo-menge" class="form-control" min="1" max="1000" value="15" required>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group flex-1">
+                                        <label for="migo-usnam">User Posting</label>
+                                        <input type="text" id="migo-usnam" class="form-control" value="DEVELOPER_ABAP" readonly>
+                                    </div>
+                                    <div class="form-group flex-1">
+                                        <label for="migo-uom">Unit of Measure (UoM)</label>
+                                        <input type="text" id="migo-uom" class="form-control" value="PCS" readonly>
+                                    </div>
+                                </div>
+
+                                <div class="form-buttons mt-4">
+                                    <button type="submit" class="btn btn-primary" id="btn-post-migo">
+                                        <i class="fa-solid fa-circle-check"></i> Post Goods Movement (Ctrl+S)
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Real-time BAdI Logic Console Logger -->
+                        <div class="dashboard-panel migo-log-panel">
+                            <div class="panel-header-with-actions">
+                                <h3><i class="fa-solid fa-terminal"></i> BAdI Interception Engine Logs</h3>
+                                <button class="btn btn-sm outline" id="clear-badi-logs"><i class="fa-solid fa-ban"></i> Clear</button>
+                            </div>
+                            <p class="panel-subtitle">Tracks the active call stack of MB_DOCUMENT_BADI intercepting the posting</p>
+                            
+                            <div class="terminal-console" id="badi-terminal">
+                                <div class="terminal-welcome">
+                                    <p class="text-orange">// SAP BAdI Engine Monitor Online</p>
+                                    <p class="text-muted">Waiting for Goods Movement posting trigger...</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 4. DDIC EXPLORER VIEWPORT -->
+                <section class="tab-viewport" id="viewport-ddic-explorer">
+                    <div class="ddic-explorer-layout">
+                        <!-- Table Selection List -->
+                        <div class="ddic-sidebar">
+                            <h4>Data Dictionary Objects</h4>
+                            <div class="ddic-tree">
+                                <div class="tree-section">
+                                    <span class="tree-title"><i class="fa-solid fa-table"></i> Database Tables</span>
+                                    <button class="tree-item active" data-table="ZMINVENT_MASTER" id="ddic-tab-master">
+                                        <span class="sap-object-tag tabl">TABL</span> ZMINVENT_MASTER
+                                    </button>
+                                    <button class="tree-item" data-table="ZMINVENT_MOVE" id="ddic-tab-move">
+                                        <span class="sap-object-tag tabl">TABL</span> ZMINVENT_MOVE
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Table Definition Inspector -->
+                        <div class="ddic-inspector dashboard-panel">
+                            <div class="inspector-header">
+                                <div>
+                                    <h3 id="ddic-table-name">ZMINVENT_MASTER</h3>
+                                    <p class="panel-subtitle" id="ddic-table-desc">Material Master Safety Stock and Current Inventory</p>
+                                </div>
+                                <span class="badge badge-sap">Transparent Table</span>
+                            </div>
+
+                            <div class="table-details-grid mt-4">
+                                <div class="detail-cell"><strong>Delivery Class:</strong> <span id="ddic-delclass">A (Application table)</span></div>
+                                <div class="detail-cell"><strong>Data Class:</strong> <span id="ddic-dataclass">APPL0 (Master data, transparent)</span></div>
+                                <div class="detail-cell"><strong>Size Category:</strong> <span id="ddic-sizecat">1 (0 to 18,000 records)</span></div>
+                                <div class="detail-cell"><strong>Buffering:</strong> <span id="ddic-buffering">Not Allowed</span></div>
+                            </div>
+
+                            <h4 class="mt-4">Field Definitions</h4>
+                            <div class="ddic-fields-table-wrapper">
+                                <table class="ddic-fields-table" id="ddic-fields-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Field Name</th>
+                                            <th>Key</th>
+                                            <th>Data Element (Rollname)</th>
+                                            <th>Data Type</th>
+                                            <th>Length</th>
+                                            <th>Ref Table</th>
+                                            <th>Ref Field</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ddic-fields-tbody">
+                                        <!-- Dynamically loaded fields -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 5. CODE VIEWER VIEWPORT -->
+                <section class="tab-viewport" id="viewport-code-viewer">
+                    <div class="code-viewer-layout">
+                        <!-- Code Explorer File Tree -->
+                        <div class="code-sidebar">
+                            <h4>abapGit Workspace</h4>
+                            <div class="code-tree">
+                                <div class="code-tree-section">
+                                    <span class="tree-title"><i class="fa-solid fa-folder-open"></i> src/</span>
+                                    <button class="code-tree-item active" data-file="zcl_inventory_balance.clas.abap">
+                                        <span class="sap-object-tag clas">CLAS</span> zcl_inventory_balance.clas.abap
+                                    </button>
+                                    <button class="code-tree-item" data-file="zcl_inventory_balance.clas.xml">
+                                        <span class="sap-object-tag xml">XML</span> zcl_inventory_balance.clas.xml
+                                    </button>
+                                    <button class="code-tree-item" data-file="zcl_im_inv_repl_badi.clas.abap">
+                                        <span class="sap-object-tag clas">CLAS</span> zcl_im_inv_repl_badi.clas.abap
+                                    </button>
+                                    <button class="code-tree-item" data-file="zcl_im_inv_repl_badi.clas.xml">
+                                        <span class="sap-object-tag xml">XML</span> zcl_im_inv_repl_badi.clas.xml
+                                    </button>
+                                    <button class="code-tree-item" data-file="zinv_repl_badi.enho.xml">
+                                        <span class="sap-object-tag enho">ENHO</span> zinv_repl_badi.enho.xml
+                                    </button>
+                                    <button class="code-tree-item" data-file="zinv_alv_report.prog.abap">
+                                        <span class="sap-object-tag prog">PROG</span> zinv_alv_report.prog.abap
+                                    </button>
+                                    <button class="code-tree-item" data-file="zinv_alv_report.prog.xml">
+                                        <span class="sap-object-tag xml">XML</span> zinv_alv_report.prog.xml
+                                    </button>
+                                    <button class="code-tree-item" data-file="zminvent_master.tabl.xml">
+                                        <span class="sap-object-tag tabl">TABL</span> zminvent_master.tabl.xml
+                                    </button>
+                                    <button class="code-tree-item" data-file="zminvent_move.tabl.xml">
+                                        <span class="sap-object-tag tabl">TABL</span> zminvent_move.tabl.xml
+                                    </button>
+                                </div>
+                                <div class="code-tree-section">
+                                    <span class="tree-title"><i class="fa-solid fa-folder"></i> Root</span>
+                                    <button class="code-tree-item" data-file="abapgit.xml">
+                                        <span class="sap-object-tag xml">XML</span> abapgit.xml
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Code Editor/Display Area -->
+                        <div class="code-editor-panel dashboard-panel">
+                            <div class="code-editor-header">
+                                <div class="file-name-bar">
+                                    <i class="fa-solid fa-file-code text-accent"></i>
+                                    <span id="current-filename">zcl_inventory_balance.clas.abap</span>
+                                </div>
+                                <div class="editor-actions">
+                                    <button class="btn btn-sm outline" id="btn-copy-code" title="Copy to clipboard"><i class="fa-solid fa-copy"></i> Copy</button>
+                                    <button class="btn btn-sm outline" id="btn-edit-code-toggle" title="Modify source code file"><i class="fa-solid fa-pencil"></i> Edit Mock Code</button>
+                                    <span class="badge badge-success" id="editor-saved-badge">Read Only</span>
+                                </div>
+                            </div>
+                            <div class="code-pre-wrapper">
+                                <pre id="code-content" class="code-editor-content language-abap">
+                                    <!-- Populated dynamically -->
+                                </pre>
+                                <textarea id="code-textarea" class="code-editor-textarea hide" spellcheck="false"></textarea>
+                            </div>
+                            <div class="editor-footer hide" id="editor-edit-footer">
+                                <p class="text-warning"><i class="fa-solid fa-triangle-exclamation"></i> Editing this mock file simulates abapGit local state drift. Commit changes in the abapGit tab!</p>
+                                <div>
+                                    <button class="btn btn-sm btn-primary" id="btn-save-code"><i class="fa-solid fa-circle-check"></i> Save Mock Changes</button>
+                                    <button class="btn btn-sm outline" id="btn-cancel-edit"><i class="fa-solid fa-xmark"></i> Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 6. ABAPGIT PANEL VIEWPORT -->
+                <section class="tab-viewport" id="viewport-abapgit-panel">
+                    <div class="abapgit-layout">
+                        <!-- Git Status Summary -->
+                        <div class="dashboard-panel">
+                            <h3><i class="fa-brands fa-git-alt"></i> Local abapGit Status</h3>
+                            <p class="panel-subtitle">Tracks synchronization between local SAP DB and Git Repository</p>
+
+                            <div class="git-status-actions-row mt-4">
+                                <div class="git-stats">
+                                    <div class="git-stat-tile">
+                                        <span class="git-stat-num" id="git-unstaged-count">0</span>
+                                        <span class="git-stat-label">Changed Objects</span>
+                                    </div>
+                                    <div class="git-stat-tile">
+                                        <span class="git-stat-num" id="git-staged-count">0</span>
+                                        <span class="git-stat-label">Staged Files</span>
+                                    </div>
+                                    <div class="git-stat-tile">
+                                        <span class="git-stat-num" id="git-commit-count">4</span>
+                                        <span class="git-stat-label">Total Commits</span>
+                                    </div>
+                                </div>
+                                <div class="git-action-buttons">
+                                    <button class="btn btn-primary" id="git-btn-commit" disabled>
+                                        <i class="fa-solid fa-code-commit"></i> abapGit Stage & Commit
+                                    </button>
+                                    <button class="btn btn-secondary outline" id="git-btn-push" disabled>
+                                        <i class="fa-solid fa-cloud-arrow-up"></i> Push to Remote
+                                    </button>
+                                    <button class="btn btn-secondary outline" id="git-btn-refresh">
+                                        <i class="fa-solid fa-arrow-rotate-right"></i> Check Status
+                                    </button>
+                                </div>
+                            </div>
+
+                            <h4 class="mt-4">Object Diff / Modified Files List</h4>
+                            <div class="git-files-list mt-2">
+                                <div class="git-files-header">
+                                    <span>Object Name</span>
+                                    <span>Type</span>
+                                    <span>Status</span>
+                                    <span>Git Action</span>
+                                </div>
+                                <div class="git-files-body" id="git-files-body">
+                                    <!-- Dynamically loaded status -->
+                                    <div class="git-empty-state">
+                                        <i class="fa-solid fa-circle-check text-green"></i>
+                                        <p>SAP DB is fully synchronized with the Git repository. No local changes detected.</p>
+                                        <span class="tip-text">Try editing one of the source code files in the <strong>ABAP Source Code</strong> tab to simulate local drift!</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Git Commit History -->
+                        <div class="dashboard-panel mt-4">
+                            <h3><i class="fa-solid fa-history"></i> Repository History (Git Log)</h3>
+                            <div class="git-log-timeline" id="git-log-timeline">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Secondary DRILLDOWN ALV Popup Modal -->
+    <div class="modal-backdrop hide" id="alv-drilldown-modal">
+        <div class="sap-modal-window">
+            <div class="modal-header">
+                <h4><i class="fa-solid fa-window-restore"></i> Secondary Grid (Program: ZINV_ALV_REPORT -> Movement History)</h4>
+                <button class="close-modal-btn" id="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="drilldown-meta mb-2">
+                    <p>Material Number: <strong id="modal-matnr" class="text-accent">Z-100</strong></p>
+                    <p>Description: <strong id="modal-maktx">Steel Support Bracket</strong></p>
+                </div>
+                <div class="sap-alv-container">
+                    <div class="alv-grid-toolbar bg-secondary">
+                        <span class="alv-title">Movement Log: ZMINVENT_MOVE</span>
+                    </div>
+                    <div class="alv-table-wrapper select-none">
+                        <table class="sap-alv-table secondary" id="modal-alv-table">
+                            <thead>
+                                <tr>
+                                    <th>Doc Number</th>
+                                    <th>Year</th>
+                                    <th>Item</th>
+                                    <th>Mvt (BWART)</th>
+                                    <th>Cr/Dr (SHKZG)</th>
+                                    <th class="text-right">Quantity</th>
+                                    <th>UoM</th>
+                                    <th>Posting Date</th>
+                                    <th>Posting Time</th>
+                                    <th>User</th>
+                                </tr>
+                            </thead>
+                            <tbody id="modal-alv-tbody">
+                                <!-- Populated dynamically based on clicked item -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-sap-reset" id="btn-close-modal-footer">Close Window</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Entry -->
+    <script src="app.js"></script>
+</body>
+</html>

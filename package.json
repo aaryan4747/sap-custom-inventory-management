@@ -1,0 +1,22 @@
+{
+  "name": "sap-custom-inventory-management",
+  "version": "1.0.0",
+  "description": "SAP ABAP Custom Inventory Replenishment System with Interactive Web Simulator",
+  "main": "index.html",
+  "scripts": {
+    "start": "npx -y lite-server"
+  },
+  "keywords": [
+    "sap",
+    "abap",
+    "badi",
+    "alv",
+    "abapgit",
+    "inventory-management"
+  ],
+  "author": "Aaryan Karthik",
+  "license": "MIT",
+  "devDependencies": {
+    "lite-server": "^2.6.1"
+  }
+}
